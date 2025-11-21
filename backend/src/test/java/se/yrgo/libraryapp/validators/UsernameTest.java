@@ -1,20 +1,31 @@
 package se.yrgo.libraryapp.validators;
 
-// import static org.junit.jupiter.api.Assertions.*;
 import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.*;
+import org.junit.jupiter.params.provider.*;
 
 public class UsernameTest {
-    // @ParameterizedTest
-    // @ValueSource(strings = { "0-20330-0-02531", "0-20000-0-02598",
-    // "0-27100-0-02531" })
-    // void testCanParseToString(String idString) {
-    // WigosStationIdentifier identifier = WigosStationIdentifier.parse(idString);
-    // assertThat(identifier).hasToString(idString);
-    // }
+    @ParameterizedTest
+    @ValueSource(strings = { "Ladyfunyon", "FizzyFizzen", "Fizzen129" })
+    void checkCorrectUsername(String string) {
+        assertThat(Username.validate(string)).isTrue();
+    }
 
-    @Test
+    @ParameterizedTest
+    @ValueSource(strings = { "Ladyfu nyon", "FizzyF-2 izzen", " Fi  -zzen129 ", "F" })
+    void checkIncorrectUsername(String string) {
+        assertThat(Username.validate(string)).isFalse();
+    }
+
+    @ParameterizedTest
+    @EmptySource
+    void checkEmpty(String string) {
+        assertThat(Username.validate(string)).isFalse();
+    }
+
+    @Test 
     void correctUsername() {
         assertThat(Username.validate("bosse")).isTrue();
     }
