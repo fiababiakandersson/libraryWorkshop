@@ -39,4 +39,57 @@ public class UserDaoIntegrationTest {
         assertThat(maybeUser.get().getName()).isEqualTo(username);
         assertThat(maybeUser.get().getId()).isEqualTo(userId);
     }
+
+    // ex 2
+    @Test
+    void getLoginInfoCorrectName() {
+        final UserId id = UserId.of(1);
+        final String name = "test";
+
+        UserDao userDao = new UserDao(ds);
+        Optional<LoginInfo> maybeLoginInfo = userDao.getLoginInfo(name);
+
+        assertThat(maybeLoginInfo).isPresent();
+        assertThat(maybeLoginInfo.get().getUserId()).isEqualTo(id);
+    }
+
+    @Test
+    void getLoginInfoIncorrectName() {
+        final String name = "iDontExist";
+
+        UserDao userDao = new UserDao(ds);
+        Optional<LoginInfo> maybeLoginInfo = userDao.getLoginInfo(name);
+
+        assertThat(maybeLoginInfo).isEmpty();
+    }
+
+    @Test
+    void registerCorrectInfo() {
+        final String name = "testName";
+        final String realName = "testRealName";
+        final String passwordHash = "testPasswordHash";
+
+        UserDao userDao = new UserDao(ds);
+        boolean maybeRegistered = userDao.register(name, realName, passwordHash);
+
+        assertThat(userDao.get(userDao.getLoginInfo(name).get().getUserId().toString())).isPresent();
+
+        assertThat(maybeRegistered).isTrue();
+    }
+
+    @Test
+    void registerIncorrectInfo_integrationTest() {
+        UserDao userDao = new UserDao(ds);
+
+        userDao.register("duplicate", "test", "pw1");
+        boolean result = userDao.register("duplicate", "test", "pw2");
+
+        assertThat(result).isFalse();
+    }
 }
+
+// assertThatThrownBy(() ->
+// userDao.getLoginInfo(name)).isInstanceOf(SQLException.class);
+
+// assertThatExceptionOfType(SQLException.class).isThrownBy(() ->
+// userDao.getLoginInfo(name));
