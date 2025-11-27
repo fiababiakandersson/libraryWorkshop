@@ -1,22 +1,18 @@
 package se.yrgo.libraryapp;
 
-import org.pac4j.core.authorization.authorizer.RequireAllRolesAuthorizer;
-import io.jooby.AccessLogHandler;
-import io.jooby.CorsHandler;
-import io.jooby.GracefulShutdown;
-import io.jooby.Jooby;
-import io.jooby.SameSite;
-import io.jooby.di.GuiceModule;
-import io.jooby.flyway.FlywayModule;
-import io.jooby.hikari.HikariModule;
-import io.jooby.json.JacksonModule;
-import io.jooby.pac4j.Pac4jModule;
-import io.jooby.pac4j.Pac4jOptions;
-import se.yrgo.libraryapp.auth.DbCookieClient;
+import org.pac4j.core.authorization.authorizer.*;
+
+import io.jooby.*;
+import io.jooby.di.*;
+import io.jooby.flyway.*;
+import io.jooby.hikari.*;
+import io.jooby.json.*;
+import io.jooby.pac4j.*;
+import se.yrgo.libraryapp.auth.*;
 import se.yrgo.libraryapp.controllers.*;
 import se.yrgo.libraryapp.controllers.BookController;
 import se.yrgo.libraryapp.controllers.admin.*;
-import se.yrgo.libraryapp.entities.Role;
+import se.yrgo.libraryapp.entities.*;
 
 /**
  * This is a Jooby application, an alternative to Spring, kind of.
@@ -31,6 +27,7 @@ public class App extends Jooby {
     install(new HikariModule()); // database connections
     install(new FlywayModule()); // schema migration
     install(new JacksonModule()); // json (de)serialization
+    install(new GuiceModule(new AppModule()));
 
     decorator(new AccessLogHandler());
     decorator(new CorsHandler());
@@ -51,7 +48,8 @@ public class App extends Jooby {
     pac4jOptions.setCookieSameSite(SameSite.LAX);
     pac4jOptions.setLogoutPath("/p4jlogout"); // can't get rid of it
 
-    // Having three modules seems less than ideal, but I can't find another way with jooby
+    // Having three modules seems less than ideal, but I can't find another way with
+    // jooby
 
     Pac4jModule module1 = new Pac4jModule(pac4jOptions);
     module1.client("/*", DbCookieClient.class);
