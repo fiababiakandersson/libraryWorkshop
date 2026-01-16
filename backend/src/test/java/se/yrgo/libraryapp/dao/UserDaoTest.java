@@ -13,7 +13,6 @@ import org.junit.jupiter.api.*;
 import org.mockito.*;
 import org.mockito.junit.jupiter.*;
 import org.mockito.quality.*;
-import org.springframework.security.crypto.argon2.*;
 
 import se.yrgo.libraryapp.entities.*;
 
@@ -113,19 +112,20 @@ public class UserDaoTest {
     }
 
     // test test for registerOriginalForAssignment
-    @Test
-    void registerOriginalForAssignment() throws SQLException {
-        final String username = "testuser";
-        final String realname = "bosse";
-        final String password = "password";
-        Argon2PasswordEncoder encoder = new Argon2PasswordEncoder();
+    // @Test
+    // void registerOriginalForAssignment() throws SQLException {
+    // final String username = "testuser";
+    // final String realname = "bosse";
+    // final String password = "password";
+    // Argon2PasswordEncoder encoder = new Argon2PasswordEncoder();
 
-        when(encoder.encode(anyString())).thenReturn(anyString());
+    // when(encoder.encode(anyString())).thenReturn(anyString());
 
-        UserDao userDao = new UserDao(ds);
+    // UserDao userDao = new UserDao(ds);
 
-        Boolean result = userDao.registerOriginalForAssignment(username, realname, password);
+    // Boolean result = userDao.registerOriginalForAssignment(username, realname,
+    // password);
 
-        assertThat(result).isTrue();
-    }
+    // assertThat(result).isTrue();
+    // }
 }

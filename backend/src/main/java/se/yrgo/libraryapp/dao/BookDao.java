@@ -3,9 +3,12 @@ package se.yrgo.libraryapp.dao;
 import java.sql.*;
 import java.time.*;
 import java.util.*;
+
 import javax.inject.*;
 import javax.sql.*;
+
 import org.slf4j.*;
+
 import se.yrgo.libraryapp.entities.*;
 
 public class BookDao {
@@ -37,7 +40,6 @@ public class BookDao {
 
         return Optional.empty();
     }
-
 
     public Set<BookEdition> find(String isbn, String title, String author) {
         if ((isbn == null || isbn.trim().length() == 0)
@@ -95,6 +97,19 @@ public class BookDao {
             return List.of();
         }
     }
+
+    // try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+    // pstmt.setString(1, user);
+
+    // try (ResultSet rs = pstmt.executeQuery()) {
+    // if (rs.next()) {
+    // String storedPassword = rs.getString("password");
+    // return storedPassword.equals(pass);
+    // } else {
+    // return false;
+    // }
+    // }
+    // }
 
     public boolean lend(BookId book, UserId user) {
         String query = "INSERT INTO book_loan VALUES (?, ?, DATE_ADD(CURDATE(), INTERVAL 1 MONTH))";
@@ -224,13 +239,12 @@ public class BookDao {
     @SuppressWarnings("java:S2095")
     private static PreparedStatement createFindQuery(Connection conn, String isbn, String title,
             String author) throws SQLException {
-        String baseQuery =
-                "SELECT COUNT(b.book_id) AS count, be.isbn, title, author, dds_code, class "
-                        + "FROM book_edition AS be " + "JOIN book AS b ON be.isbn = b.isbn "
-                        + "JOIN dewey_decimal_system AS dds ON be.dds_code = dds.code WHERE 1=1 ";
+        String baseQuery = "SELECT COUNT(b.book_id) AS count, be.isbn, title, author, dds_code, class "
+                + "FROM book_edition AS be " + "JOIN book AS b ON be.isbn = b.isbn "
+                + "JOIN dewey_decimal_system AS dds ON be.dds_code = dds.code WHERE 1=1 ";
 
-        String[] input = {isbn, title, author};
-        String[] inputQuery = {" be.isbn LIKE ? ", " be.title LIKE ? ", " be.author LIKE ?"};
+        String[] input = { isbn, title, author };
+        String[] inputQuery = { " be.isbn LIKE ? ", " be.title LIKE ? ", " be.author LIKE ?" };
         List<String> resultQueries = new ArrayList<>();
         List<String> resultData = new ArrayList<>();
 
@@ -260,8 +274,7 @@ public class BookDao {
     @SuppressWarnings("java:S2095")
     private static PreparedStatement createClassificationQuery(Connection conn,
             DdsClassification classification) throws SQLException {
-        String query =
-                "SELECT isbn, title, author FROM book_edition WHERE dds_code = ? GROUP BY isbn";
+        String query = "SELECT isbn, title, author FROM book_edition WHERE dds_code = ? GROUP BY isbn";
 
         PreparedStatement ps = conn.prepareStatement(query);
         ps.setInt(1, classification.getCode());
