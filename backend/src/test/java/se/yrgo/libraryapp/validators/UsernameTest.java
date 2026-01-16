@@ -25,7 +25,7 @@ public class UsernameTest {
         assertThat(Username.validate(string)).isFalse();
     }
 
-    @Test 
+    @Test
     void correctUsername() {
         assertThat(Username.validate("bosse")).isTrue();
     }
