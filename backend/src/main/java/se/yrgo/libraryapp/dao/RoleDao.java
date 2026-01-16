@@ -1,17 +1,14 @@
 package se.yrgo.libraryapp.dao;
 
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.List;
-import javax.inject.Inject;
-import javax.sql.DataSource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import se.yrgo.libraryapp.entities.Role;
-import se.yrgo.libraryapp.entities.UserId;
+import java.sql.*;
+import java.util.*;
+
+import javax.inject.*;
+import javax.sql.*;
+
+import org.slf4j.*;
+
+import se.yrgo.libraryapp.entities.*;
 
 public class RoleDao {
     private static Logger logger = LoggerFactory.getLogger(RoleDao.class);
@@ -24,18 +21,20 @@ public class RoleDao {
 
     public List<Role> get(UserId userId) {
         List<Role> roles = new ArrayList<>();
+        String sql = "SELECT r.role FROM user_role AS ur JOIN role AS r ON ur.role_id = r.id WHERE ur.user_id = ?";
         try (Connection conn = ds.getConnection();
-                Statement stmt = conn.createStatement();
-                ResultSet rs = stmt.executeQuery(
-                        "SELECT r.role FROM user_role AS ur JOIN role AS r ON ur.role_id = r.id WHERE ur.user_id = '"
-                                + userId + "'")) {
-            while (rs.next()) {
-                roles.add(Role.fromString(rs.getString("r.role")));
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, userId.toString());
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    roles.add(Role.fromString(rs.getString("r.role")));
+                }
             }
 
             return roles;
-        }
-        catch (SQLException ex) {
+        } catch (SQLException ex) {
             logger.error("Unable to get user id", ex);
             return List.of();
         }

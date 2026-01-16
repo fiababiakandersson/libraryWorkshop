@@ -89,7 +89,7 @@ public class BookDao {
                 + "ORDER BY return_date ASC";
 
         try (Connection conn = ds.getConnection();
-                Statement stmt = conn.createStatement();
+                PreparedStatement stmt = conn.prepareStatement(query);
                 ResultSet rs = stmt.executeQuery(query)) {
             return getOverdueFromSet(rs);
         } catch (SQLException ex) {
@@ -97,19 +97,6 @@ public class BookDao {
             return List.of();
         }
     }
-
-    // try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-    // pstmt.setString(1, user);
-
-    // try (ResultSet rs = pstmt.executeQuery()) {
-    // if (rs.next()) {
-    // String storedPassword = rs.getString("password");
-    // return storedPassword.equals(pass);
-    // } else {
-    // return false;
-    // }
-    // }
-    // }
 
     public boolean lend(BookId book, UserId user) {
         String query = "INSERT INTO book_loan VALUES (?, ?, DATE_ADD(CURDATE(), INTERVAL 1 MONTH))";

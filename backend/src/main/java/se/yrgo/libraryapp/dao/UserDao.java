@@ -21,10 +21,11 @@ public class UserDao {
     }
 
     public Optional<User> get(String id) {
+        String sql = "SELECT user, realname FROM user WHERE id = ?";
         try (Connection conn = ds.getConnection();
-                Statement stmt = conn.createStatement();
-                ResultSet rs = stmt
-                        .executeQuery("SELECT user, realname FROM user WHERE id = '" + id + "'")) {
+                PreparedStatement stmt = conn.prepareStatement(sql);) {
+            stmt.setString(1, id);
+            ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 String name = rs.getString("user");
                 String realname = rs.getString("realname");
@@ -38,10 +39,11 @@ public class UserDao {
     }
 
     public Optional<LoginInfo> getLoginInfo(String user) {
+        String sql = "SELECT id, password_hash FROM user WHERE user = ?";
         try (Connection conn = ds.getConnection();
-                Statement stmt = conn.createStatement();
-                ResultSet rs = stmt.executeQuery(
-                        "SELECT id, password_hash FROM user WHERE user = '" + user + "'")) {
+                PreparedStatement stmt = conn.prepareStatement(sql);) {
+                    stmt.setString(1, user);
+            ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 int id = rs.getInt("id");
                 UserId userId = UserId.of(id);
@@ -101,10 +103,12 @@ public class UserDao {
 
     private boolean insertUserAndRole(String name, String realname, String passwordHash,
             Connection conn) throws SQLException {
-        String insertUser = "INSERT INTO user (user, realname, password_hash) VALUES ('" + name
-                + "', '" + realname + "', '" + passwordHash + "')";
+        String insertUser = "INSERT INTO user (user, realname, password_hash) VALUES (?, ?, ?)";
 
-        try (Statement stmt = conn.createStatement()) {
+        try (PreparedStatement stmt = conn.prepareStatement(insertUser)) {
+            stmt.setString(1, name);
+            stmt.setString(2, realname);
+            stmt.setString(3, passwordHash);
             stmt.executeUpdate(insertUser, Statement.RETURN_GENERATED_KEYS);
             UserId userId = getGeneratedUserId(stmt);
 
