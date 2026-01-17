@@ -1,7 +1,6 @@
 package se.yrgo.libraryapp.entities.forms;
 
-import se.yrgo.libraryapp.entities.BookId;
-import se.yrgo.libraryapp.entities.UserId;
+import se.yrgo.libraryapp.entities.*;
 
 public class LoanData {
     private BookId book;
@@ -10,6 +9,9 @@ public class LoanData {
     public LoanData(BookId book, UserId user) {
         this.book = book;
         this.user = user;
+    }
+
+    public LoanData() {
     }
 
     public BookId getBook() {
@@ -41,14 +43,12 @@ public class LoanData {
         if (book == null) {
             if (other.book != null)
                 return false;
-        }
-        else if (!book.equals(other.book))
+        } else if (!book.equals(other.book))
             return false;
         if (user == null) {
             if (other.user != null)
                 return false;
-        }
-        else if (!user.equals(other.user))
+        } else if (!user.equals(other.user))
             return false;
         return true;
     }

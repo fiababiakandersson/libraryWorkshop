@@ -25,9 +25,16 @@ public class SessionDao {
 
     public UUID create(UserId userId) {
         UUID uuid = UUID.randomUUID();
-        String sql = "INSERT INTO session VALUES ('" + uuid.toString() + "', " + userId
-                + ", CURRENT_TIMESTAMP)";
-        try (Connection conn = ds.getConnection(); PreparedStatement stmt = conn.prepareStatement(sql)) {
+        String sql = "INSERT INTO session (id, user_id, created) VALUES (?, ?, CURRENT_TIMESTAMP)";
+
+        try (Connection conn = ds.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, uuid.toString());
+            stmt.setInt(2, userId.getId());
+
+            stmt.executeUpdate();
+
             return uuid;
         } catch (SQLException ex) {
             throw new CredentialsException("Unable to create session", ex);

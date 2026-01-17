@@ -2,7 +2,7 @@
     <ModalBox ref="alert" only-ok>Unable to register user!</ModalBox>
 
     <section class="flex justify-center my-2">
-        <form @submit.prevent="register" class="max-w-md w-full bg-base-300 rounded p-6 space-y-4">
+        <form @submit.prevent="register" class="w-full max-w-md p-6 space-y-4 rounded bg-base-300">
             <input type="text" v-model="username" placeholder="Username"
                 :class="['input', 'input-bordered', 'w-full', 'max-w-md', !v$.username.$error ? 'border-green-500' : 'border-red-500']">
             <input type="text" v-model="realname" placeholder="Real Name"
@@ -17,10 +17,10 @@
 </template>
 
 <script>
-import ModalBox from '../components/ModalBox.vue'
 import useVuelidate from '@vuelidate/core'
-import { helpers, required, minLength, sameAs } from '@vuelidate/validators'
+import { helpers, minLength, required, sameAs } from '@vuelidate/validators'
 import { watchDebounced } from '@vueuse/core'
+import ModalBox from '../components/ModalBox.vue'
 
 const userNameValidator = helpers.regex(/^[a-zA-Z0-9@._-]{4,}$/)
 
@@ -66,9 +66,9 @@ export default {
             { debounce: 500, maxWait: 1000 }
         )
     },
-    mounted() {
-        this.v$.username.$touch()
-    },
+    // mounted() {
+    //     this.v$.username.$touch()
+    // },
     methods: {
         availableValidator() {
             return this.isUserNameAvailable

@@ -42,7 +42,7 @@ public class UserDao {
         String sql = "SELECT id, password_hash FROM user WHERE user = ?";
         try (Connection conn = ds.getConnection();
                 PreparedStatement stmt = conn.prepareStatement(sql);) {
-                    stmt.setString(1, user);
+            stmt.setString(1, user);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 int id = rs.getInt("id");
@@ -105,11 +105,13 @@ public class UserDao {
             Connection conn) throws SQLException {
         String insertUser = "INSERT INTO user (user, realname, password_hash) VALUES (?, ?, ?)";
 
-        try (PreparedStatement stmt = conn.prepareStatement(insertUser)) {
+        try (PreparedStatement stmt = conn.prepareStatement(insertUser, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setString(1, name);
             stmt.setString(2, realname);
             stmt.setString(3, passwordHash);
-            stmt.executeUpdate(insertUser, Statement.RETURN_GENERATED_KEYS);
+
+            stmt.executeUpdate();
+
             UserId userId = getGeneratedUserId(stmt);
 
             if (userId.getId() > 0 && addToUserRole(conn, userId)) {

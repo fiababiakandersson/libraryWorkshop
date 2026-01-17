@@ -1,5 +1,6 @@
+<!-- eslint-disable indent -->
 <template>
-    <div class="flex flex-col lg:flex-row gap-4 my-2 w-full justify-center">
+    <div class="flex flex-col justify-center w-full gap-4 my-2 lg:flex-row">
         <ModalBox ref="question"><span v-html="question"></span></ModalBox>
         <ModalBox ref="alert" only-ok>{{ question }}</ModalBox>
         <ModalBox ref="alertLend" only-ok>
@@ -14,24 +15,24 @@
         </ModalBox>
 
         <section class="flex justify-center">
-            <form @submit.prevent="lendBook" class="max-w-md w-full bg-base-300 rounded p-6 space-y-4">
+            <form @submit.prevent="lendBook" class="w-full max-w-md p-6 space-y-4 rounded bg-base-300">
                 <h2 class="font-bold">Lend out a book</h2>
                 <input type="number" v-model="loanBookId" placeholder="Book ID"
-                    class="input input-bordered w-full max-w-md">
+                    class="w-full max-w-md input input-bordered">
                 <input type="number" v-model="loanUserId" placeholder="User ID"
-                    class="input input-bordered w-full max-w-md">
+                    class="w-full max-w-md input input-bordered">
 
                 <input type="submit" value="Lend book" class="btn btn-primary">
             </form>
         </section>
 
         <section class="flex justify-center">
-            <form @submit.prevent="returnBook" class="max-w-md w-full bg-base-300 rounded p-6 space-y-4">
+            <form @submit.prevent="returnBook" class="w-full max-w-md p-6 space-y-4 rounded bg-base-300">
                 <h2 class="font-bold">Return a book</h2>
                 <input type="number" v-model="returnBookId" placeholder="Book ID"
-                    class="input input-bordered w-full max-w-md">
+                    class="w-full max-w-md input input-bordered">
                 <input type="text" v-model="returnBookIsbn" placeholder="ISBN"
-                    class="input input-bordered w-full max-w-md">
+                    class="w-full max-w-md input input-bordered">
 
                 <input type="submit" value="Return book" class="btn btn-primary">
             </form>
@@ -40,9 +41,9 @@
 </template>
 
 <script>
-import useVuelidate from '@vuelidate/core'
-import { numeric, required } from '@vuelidate/validators'
-import ModalBox from '@/components/ModalBox.vue'
+import ModalBox from '@/components/ModalBox.vue';
+import useVuelidate from '@vuelidate/core';
+import { numeric, required } from '@vuelidate/validators';
 
 export default {
     name: 'AdminLoanView',
@@ -73,58 +74,70 @@ export default {
         }
     },
     methods: {
-        async lendBook() {
-            // do not check return value since validate validates 
-            // both forms at once (unfortunately)
-            await this.v$.$validate()
-            if (this.v$.loanBookId.$invalid || this.v$.loanUserId.$invalid) {
-                this.bookIdError = this.v$.loanBookId.$errors.map(x => x.$message).join(' ')
-                this.userIdError = this.v$.loanUserId.$errors.map(x => x.$message).join(' ')
-                await this.$refs.alertLend.show()
-                return
-            }
+     async lendBook() {
+    await this.v$.$validate()
+    if (this.v$.loanBookId.$invalid || this.v$.loanUserId.$invalid) {
+        this.bookIdError = this.v$.loanBookId.$errors.map(x => x.$message).join(' ')
+        this.userIdError = this.v$.loanUserId.$errors.map(x => x.$message).join(' ')
+        await this.$refs.alertLend.show()
+        return
+    }
 
-            const bookPromise = fetch(`/api/admin/books/${this.loanBookId}`)
-            const userPromise = fetch(`/api/admin/users/${this.loanUserId}`)
+    const bookPromise = fetch(`/api/admin/books/${this.loanBookId}`)
+    const userPromise = fetch(`/api/admin/users/${this.loanUserId}`)
 
-            // TODO: check ok from resp
-            const [bookResp, userResp] = await Promise.all([bookPromise, userPromise])
-            const [book, user] = await Promise.all([bookResp.json(), userResp.json()])
+    const [bookResp, userResp] = await Promise.all([bookPromise, userPromise])
 
-            if (book == null || !book.available || user == null) {
-                const bookFoundError = book?.available ? "" : "Book is unavailable"
-                this.bookIdError = book ? bookFoundError : "Book not found"
-                this.userIdError = user ? "" : "User not found"
-                await this.$refs.alertLend.show()
-                return
-            }
+    // --- NEW: Security Check ---
+    if (bookResp.status === 401 || userResp.status === 401) {
+        this.question = "<b>Access Denied:</b> You are either not logged in or not an Admin."
+        await this.$refs.alert.show()
+        return 
+    }
+    // ---------------------------
 
-            this.question = `Do you wish to lend out book ${book.edition.title} to ${user.realname} (${user.name})?`
-            const res = await this.$refs.question.show()
-            if (res) {
-                const data = {
-                    book: this.loanBookId,
-                    user: this.loanUserId,
-                }
+    const [book, user] = await Promise.all([bookResp.json(), userResp.json()])
 
-                const loanResp = await fetch("/api/admin/loan/lend", {
-                    method: "POST",
-                    cache: "no-cache",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify(data),
-                })
+    if (book == null || !book.available || user == null) {
+        const bookFoundError = book?.available ? "" : "Book is unavailable"
+        this.bookIdError = book ? bookFoundError : "Book not found"
+        this.userIdError = user ? "" : "User not found"
+        await this.$refs.alertLend.show()
+        return
+    }
 
-                if (!loanResp.ok || (await loanResp.json()) !== true) {
-                    this.question = "The loan did not succeed."
-                    await this.$refs.alert.show()
-                }
-                else {
-                    this.loanBookId = ""
-                }
-            }
-        },
+    this.question = `Do you wish to lend out book ${book.edition.title} to ${user.realname} (${user.name})?`
+    const res = await this.$refs.question.show()
+    
+    if (res) {
+        const data = {
+            book: this.loanBookId,
+            user: this.loanUserId,
+        }
+
+        const loanResp = await fetch("/api/admin/loan/lend", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+        })
+
+        // Handle the final step 401 just in case
+        if (loanResp.status === 401) {
+            this.question = "Your session expired during the process."
+            await this.$refs.alert.show()
+                    return
+        }
+
+        const success = await loanResp.json()
+        if (!loanResp.ok || success !== true) {
+            this.question = "The loan did not succeed."
+            await this.$refs.alert.show()
+        } else {
+            this.loanBookId = ""
+            this.loanUserId = "" // Clear user too
+        }
+    }
+},
         async returnBook() {
             // do not check return value since validate validates 
             // both forms at once (unfortunately)

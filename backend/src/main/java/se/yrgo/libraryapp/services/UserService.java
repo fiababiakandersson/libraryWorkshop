@@ -4,7 +4,6 @@ import java.util.*;
 
 import javax.inject.*;
 
-import org.springframework.security.crypto.argon2.*;
 import org.springframework.security.crypto.password.*;
 
 import se.yrgo.libraryapp.dao.*;
@@ -36,16 +35,9 @@ public class UserService {
     }
 
     public boolean handleNameAndPassword(String name, String realname, String password) {
-        Argon2PasswordEncoder encoder = new Argon2PasswordEncoder();
         String passwordHash = encoder.encode(password);
 
-        String fixedRealName = realname.replace("'", "\\'");
-
-        if (userDao.register(name, fixedRealName, passwordHash) == true) {
-            return false;
-        } else {
-            return true;
-        }
+        return userDao.register(name, realname, passwordHash);
     }
 
     // ex 1 isNameAvailable
